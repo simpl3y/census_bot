@@ -105,7 +105,7 @@ async def on_message(message):
         response = birthday_check_response % ((row[0]))
         await message.channel.send(response)
     
-    
+    # remove census database
     if message.content.startswith('!c remove birthday'):
         if(removefrom_table('birthdays',message.author.id)):
             await message.add_reaction('❌')
