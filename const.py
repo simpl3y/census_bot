@@ -1,5 +1,9 @@
 # const.py
 
+#####BOT CONSTS######
+status = '!c help'
+
+
 ######DB CONSTS#######
 #db name
 DB_NAME = 'test.db'
