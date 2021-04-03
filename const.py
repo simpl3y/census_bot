@@ -6,7 +6,7 @@ status = '!c help'
 
 ######DB CONSTS#######
 #db name
-DB_NAME = 'test.db'
+DB_NAME = 'census.db'
 
 #bday
 bday_entries = 'ID INT PRIMARY KEY     NOT NULL,    \
@@ -18,8 +18,8 @@ bday_types = 'ID,YEAR,MONTH,DAY'
 
 #generic text
 generic_entries = 'ID INT PRIMARY KEY     NOT NULL,    \
-    ENTRY TEXT                NOT NULL'               
-generic_types = 'ID, ENTRY'
+    CENSUS_RESPONSE TEXT                NOT NULL'               
+generic_types = 'ID,CENSUS_RESPONSE'
 
 
 ######RESPONSES#######
@@ -34,3 +34,9 @@ error_response = 'There was an error running your command, try again later!'
 birthday_response = 'Today is <@%d>\'s birthday! 🥳🎉🎂'
 birthday_check_response = 'Their birthday is on %s'
 birthday_add_response = 'Added <@%d>\'s birthday to my sus list'
+
+#census responses
+generic_check_response = 'Their response to census question %d is %s. %s'
+interesting_response_list = ['Very cool!','Wow!','Interesting 🤔','Neat!']
+list_response = 'Here is a list of current census polls: '
+question_created_response = 'New census poll created! Please use %d. when answering 😊'

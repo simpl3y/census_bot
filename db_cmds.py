@@ -1,9 +1,10 @@
 import os
 import sqlite3
-import datetime
 
 from const import *
 
+
+# creates a table
 def create_db_table(name,entries):
     conn = sqlite3.connect(DB_NAME)
     try:
@@ -16,7 +17,19 @@ def create_db_table(name,entries):
     return 0
 
 
-def fetch_table(name,entries,id,scan=0,bday_list=[]):
+def list_tables():
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+
+    tables = []
+    entries = cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+    for entry in entries:
+        tables.append(entry[0])
+    conn.close()
+    return tables
+
+
+def fetch_table(name,entries,id):
     conn = sqlite3.connect(DB_NAME)
     try:
         results = conn.execute("SELECT %s FROM %s" % (entries,name))
@@ -24,28 +37,53 @@ def fetch_table(name,entries,id,scan=0,bday_list=[]):
         conn.close()
         return None
     
-    entry = []
-    if(not scan):
-        for row in results:
-            if((int(row[0]) == int(id))):
-                if(name == 'birthdays'):
-                    entry.append("%02d/%02d/%04d" % (row[2],row[3],row[1]))
-                    break 
-                else:
-                    entry.append("%s" % row[1])
-                    break
-    else:
-        dt = datetime.datetime.today()
-        for row in results:
-            if(int(row[2]) == dt.month and int(row[3]) == dt.day):
-                entry.append(row[0])
-
+    for row in results:
+        if((int(row[0]) == int(id))):
+            print(row[1])
+            conn.close()
+            return str(row[1]) 
+            
     conn.close()
-    return entry
+    return None
+
+def fetch_table_response(name,entries,response):
+    conn = sqlite3.connect(DB_NAME)
+    try:
+        results = conn.execute("SELECT %s FROM %s" % (entries,name))
+    except:
+        conn.close()
+        return None
+    entries = []
+    for row in results:
+        if(str(row[1]).find(response) == 0):
+            entries.append(row[0])
+    
+    conn.close()
+    return entries
+
+
+
+
+def scan_table(name,entries,keyword):
+    conn = sqlite3.connect(DB_NAME)
+    entries = []
+    try:
+        results = conn.execute("Select %s FROM %s" % (entries,name))
+    except:
+        conn.close()
+        return entries
+    for row in results:
+        if(str(keyword) == str(row[1])):
+            entries.append(int(row[0]))
+    return entries
+
+
+
 
 def addto_table(name,entries,values):
     conn = sqlite3.connect(DB_NAME)
     try:
+        # print("SELECT %s FROM %s" % (entries,name))
         results = conn.execute("SELECT %s FROM %s" % (entries,name))
     except:
         print("failed to check table")
@@ -54,10 +92,12 @@ def addto_table(name,entries,values):
     
     for row in results:
         if(values.find(str(row[0])) >= 0):
-            removefrom_table(name,int(row[0]))
+            # removefrom_table(name,int(row[0]))
+            conn.execute("DELETE FROM %s WHERE ID = %d" % (name, row[0]))
             break
 
     try:
+        print("INSERT INTO %s (%s) VALUES(%s)" %(name,entries,values))
         conn.execute("INSERT INTO %s (%s) VALUES(%s)" %(name,entries,values))
     except:
         print("failed to insert")
@@ -71,6 +111,7 @@ def addto_table(name,entries,values):
 def removefrom_table(name,id):
     conn = sqlite3.connect(DB_NAME)
     try:
+        print("DELETE FROM %s WHERE ID = %d" % (name, id))
         conn.execute("DELETE FROM %s WHERE ID = %d" % (name, id))
         conn.commit()
     except:
