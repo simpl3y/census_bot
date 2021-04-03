@@ -1,7 +1,7 @@
 # const.py
 
 #####BOT CONSTS######
-status = '!c help'
+status = ';;help'
 
 
 ######DB CONSTS#######
@@ -25,7 +25,12 @@ generic_types = 'ID,CENSUS_RESPONSE'
 ######RESPONSES#######
 
 #help responses
-help_response = 'This is the help function'
+help_response = '__Census Bot Help Page__ \n\
+`Create census question: ;;new {name} \n\
+See list of census questions: ;;list \n\
+See someones or your response: ;;check {name} {user} \n\
+Change a response: #. {answer} OR ;;add {name} {answer} \n\
+Delete your response ;;remove {name}`'                          
 
 #error responses
 error_response = 'There was an error running your command, try again later!'
