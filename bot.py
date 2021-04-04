@@ -15,13 +15,19 @@ from parser import *
 import discord
 from dotenv import load_dotenv
 
+from chatterbot import ChatBot
+from chatterbot.trainers import ListTrainer
+
+
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 GUILD = os.getenv('DISCORD_GUILD')
 
 client = discord.Client()
+chatbot = ChatBot("Census Bot")
+trainer = ListTrainer(chatbot)
 
-
+chatbot_trainer_log = []
 
 async def check_birthdays():
     #check to see if there is a general channel to post  
@@ -45,7 +51,15 @@ async def check_birthdays():
                 await channel.send(birthday_response % birthday)
         print('come back 24 hours to check for bday again')        
         await asyncio.sleep(86400)
-    
+
+async def bot_trainer():
+    while True:
+        if(len(chatbot_trainer_log)):
+            trainer.train(chatbot_trainer_log)
+        chatbot_trainer_log.clear()
+        print("Cleared bot logs")
+        await asyncio.sleep(60)
+
 # Run startup commands
 @client.event
 async def on_ready():
@@ -56,7 +70,7 @@ async def on_ready():
     )
     await client.change_presence(activity=discord.Game(name=status))
     client.loop.create_task(check_birthdays())
-
+    client.loop.create_task(bot_trainer())
 
 @client.event
 async def on_message(message):
@@ -160,6 +174,21 @@ async def on_message(message):
 
         await message.add_reaction('✅')
         return
+
+    
+    if client.user.mentioned_in(message):
+        try:
+            await message.channel.send(chatbot.get_response(message.content.split(' ', 1)[1]))
+        except:
+            await message.add_reaction('❌')
+
+    if(message.channel.name == 'general'): #collect chat logs for training
+        if(find_id(message.content)):
+            return
+        if(len(message.content) == 0):
+            return
+        chatbot_trainer_log.append(message.content)
+
 
 
 
