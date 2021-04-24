@@ -6,6 +6,7 @@ import logging
 import sys
 import datetime
 import asyncio
+import csv
 
 
 from const import *
@@ -23,7 +24,14 @@ client = discord.Client()
 
 
 
+receipt_message = ''
+
 async def check_birthdays():
+    #check to see if the hour is correct
+    now = datetime.datetime.now()
+    if(now.hour != 1):
+        return
+
     #check to see if there is a general channel to post  
     guild = discord.utils.find(lambda g: g.name == GUILD, client.guilds)
     channel = discord.utils.get(guild.text_channels, name="general")  #TODO configurable default channel to post
@@ -31,20 +39,62 @@ async def check_birthdays():
         print("No general channel found")
         return
 
-    if(create_db_table('birthday',generic_entries)):
-        print("No Birthday Table")
+    print("checking bdays")
+    birthdays = fetch_table_response('birthday', generic_types,'%02d-%02d' % (dt.month,dt.day))
+    if(birthdays != None):
+        for birthday in birthdays:
+            print(birthday)
+            await channel.send(birthday_response % birthday)
+    
+    return
+
+async def check_reminders():
+    remindme_list = []
+    # found_reminder_list = []
+    guild = discord.utils.find(lambda g: g.name == GUILD, client.guilds)
+    channel = discord.utils.get(guild.text_channels, name="general")  #TODO configurable default channel to post
+    if(not channel):
+        print("No general channel found")
         return
 
+    with open(REMINDME_CSV,'r') as b:
+        remindme = csv.reader(b)
+        remindme_list.extend(remindme)
+    
+    
+    for entry in remindme_list:
+        entry[1] = int(entry[1]) - 60
+        if(entry[1] <= 0):
+            await channel.send(REMINDME_MESSAGE % (entry[0],entry[2]))
+            remindme_list.remove(entry)
+
+    if(len(remindme_list) == 0):
+        with open(REMINDME_CSV,'w+') as b:
+            return
+    
+    
+    with open(REMINDME_CSV,'w') as b:
+        writer = csv.writer(b)
+        for entry in remindme_list:
+            writer.writerow(entry)
+
+
+
+
+async def check_minute():
+
     while True:
-        print("checking bdays")
-        dt = datetime.datetime.today()
-        birthdays = fetch_table_response('birthday', generic_types,'%02d-%02d' % (dt.month,dt.day))
-        if(birthdays != None):
-            for birthday in birthdays:
-                print(birthday)
-                await channel.send(birthday_response % birthday)
-        print('come back 24 hours to check for bday again')        
-        await asyncio.sleep(86400)
+        await check_reminders()
+        await asyncio.sleep(60)
+
+# does hourly routine check
+async def check_hour():
+
+    while True:
+        await check_birthdays()
+        await asyncio.sleep(3600)
+
+# 
     
 # Run startup commands
 @client.event
@@ -55,7 +105,8 @@ async def on_ready():
         f'{guild.name}(id: {guild.id})'
     )
     await client.change_presence(activity=discord.Game(name=status))
-    client.loop.create_task(check_birthdays())
+    client.loop.create_task(check_hour())
+    client.loop.create_task(check_minute())
 
 
 @client.event
@@ -67,6 +118,7 @@ async def on_message(message):
     if message.content == ';;help':
         response = help_response
         await message.channel.send(response)
+        return
 
     # create new table
     if message.content.startswith(';;new'):
@@ -79,6 +131,7 @@ async def on_message(message):
         await message.add_reaction('✅')
         response = question_created_response % (len(list_tables()) - 1)
         await message.channel.send(response)
+        return
     
 
     if message.content.startswith(';;list'):
@@ -148,6 +201,49 @@ async def on_message(message):
         await message.add_reaction('✅')
         return
 
+    if message.content.startswith(';;receipt'):
+        # print(receipt_message)
+        if(len(receipt_message) < 1):
+            await message.add_reaction('❌')
+            return
+        await message.channel.send(receipt_message)
+        return
+
+    if message.content.startswith(';;remindme'):
+        # date = find_date(message.content)
+        time = find_time(message.content)
+        
+        remind_message = ''
+        if(time == 0):
+            date =  list(datefinder.find_dates(message.content))
+            now = datetime.datetime.now()
+            try:
+                time = (date[0]-now).total_seconds()
+            except:
+                await message.add_reaction('❌')
+                return
+        
+        if(time <= 0):
+            await message.add_reaction('❌')
+            return
+        try:
+            remind_message = message.content.split('"')[1::2][0]
+        except:
+            await message.add_reaction('❌')
+            return
+        try:
+            test = int(time) - 60
+        except:
+            await message.add_reaction('❌')
+            return
+        entry = [str(message.author.id),int(time),str(remind_message)]
+        with open(REMINDME_CSV,'a') as b:
+            writer = csv.writer(b)
+            writer.writerow(entry)
+        await message.add_reaction('✅')
+        return
+
+
     if(message.channel.name == 'census'):
         answer = find_census_answer(message.content)
         if(answer == None):
@@ -160,7 +256,20 @@ async def on_message(message):
 
         await message.add_reaction('✅')
         return
+    
+    await message.channel.send(error_response)
 
+
+
+@client.event
+async def on_message_delete(message):
+    if message.author.bot:
+        print('bot message deleted')
+        return
+    global receipt_message
+    receipt_message = receipt_message_response % (message.author.id,message.content)
+    # print(receipt_message)
+    return
 
 
 client.run(TOKEN)
