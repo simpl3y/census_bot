@@ -30,10 +30,12 @@ help_response = '__Census Bot Help Page__ \n\
 See list of census questions: ;;list \n\
 See someones or your response: ;;check {name} {user} \n\
 Change a response: #. {answer} OR ;;add {name} {answer} \n\
-Delete your response ;;remove {name}`'                          
+Delete your response ;;remove {name} \n\
+Create a reminder ;;remindme {time} \"{message}\" \n\
+Generate receipts ;;receipt`'                          
 
 #error responses
-error_response = 'There was an error running your command, try again later!'
+error_response = 'Unknown command! Try `;;help` to see all my commands!'
 
 #birthday reponses
 birthday_response = 'Today is <@%d>\'s birthday! 🥳🎉🎂'
@@ -45,3 +47,11 @@ generic_check_response = 'Their response to census question %d is %s. %s'
 interesting_response_list = ['Very cool!','Wow!','Interesting 🤔','Neat!']
 list_response = 'Here is a list of current census polls: '
 question_created_response = 'New census poll created! Please use %d. when answering 😊'
+
+#reciept response
+receipt_message_response = 'I got the receipts! <@%d> said `%s`'
+
+#remindme consts stuff
+REMINDME_CSV = 'remindme.csv'
+REMINDME_FORMAT = ['ID','TIME','MESSAGE']
+REMINDME_MESSAGE = '<@%s> I\'m reminding you to %s!'

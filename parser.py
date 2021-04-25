@@ -30,3 +30,37 @@ def find_census_answer(message):
     print(answer)
     
     return answer
+
+#finds time and returns in seconds
+def find_time(message):
+    time = 0
+    count = 0
+    msg_split = message.split(' ')
+    print(msg_split)
+    for word in msg_split:
+        count += 1
+        if ';;' in word:
+            continue
+        elif 'min' in word:
+            try:
+                # print("min found: %s" % msg_split[count-2])
+                time += int(msg_split[count-2]) * 60 
+            except:
+                continue
+        elif 'hr' in word or 'hour' in word:
+            try:
+                # print("hr found: %s" % msg_split[count-2])
+                time += int(msg_split[count-2]) * 3600 
+            except:
+                continue
+        elif 'day' in word:
+            try:
+                time += int(msg_split[count-2]) * 86400
+            except:
+                continue
+        elif '\"' in word:
+            break
+
+    return time
+
+
