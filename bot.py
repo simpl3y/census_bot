@@ -82,14 +82,12 @@ async def check_reminders():
 
 
 async def check_minute():
-
     while True:
         await check_reminders()
         await asyncio.sleep(60)
 
 # does hourly routine check
 async def check_hour():
-
     while True:
         await check_birthdays()
         await asyncio.sleep(3600)
@@ -257,7 +255,7 @@ async def on_message(message):
         await message.add_reaction('✅')
         return
     
-    if message.content.startswith(';;')
+    if message.content.startswith(';;'):
         await message.channel.send(error_response)
         return
 
@@ -273,8 +271,8 @@ async def on_message_delete(message):
     # print(receipt_message)
     return
 
-@client.event
-async def on_reaction_add(reaction, user):
-    return
+# @client.event
+# async def on_reaction_add(reaction, user):
+#     return
 
 client.run(TOKEN)
