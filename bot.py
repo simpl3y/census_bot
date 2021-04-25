@@ -257,7 +257,9 @@ async def on_message(message):
         await message.add_reaction('✅')
         return
     
-    await message.channel.send(error_response)
+    if message.content.startswith(';;')
+        await message.channel.send(error_response)
+        return
 
 
 
@@ -271,5 +273,8 @@ async def on_message_delete(message):
     # print(receipt_message)
     return
 
+@client.event
+async def on_reaction_add(reaction, user):
+    return
 
 client.run(TOKEN)
