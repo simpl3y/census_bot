@@ -58,6 +58,11 @@ def find_time(message):
                 time += int(msg_split[count-2]) * 86400
             except:
                 continue
+        elif 'week' in word:
+            try:
+                time += int(msg_split[count-2]) * 86400 * 7
+            except:
+                continue
         elif '\"' in word:
             break
 

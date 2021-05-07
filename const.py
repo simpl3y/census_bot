@@ -50,6 +50,7 @@ question_created_response = 'New census poll created! Please use %d. when answer
 
 #reciept response
 receipt_message_response = 'I got the receipts! <@%d> said `%s`'
+image_types = ["png", "jpeg", "gif", "jpg"]
 
 #remindme consts stuff
 REMINDME_CSV = 'remindme.csv'

@@ -20,11 +20,16 @@ load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 GUILD = os.getenv('DISCORD_GUILD')
 
-client = discord.Client()
+intents = discord.Intents.default()
+intents.members = True
+intents.voice_states = True
+
+client = discord.Client(intents = intents)
 
 
 
 receipt_message = ''
+receipt_image = None
 
 async def check_birthdays():
     #check to see if the hour is correct
@@ -205,6 +210,9 @@ async def on_message(message):
             await message.add_reaction('❌')
             return
         await message.channel.send(receipt_message)
+        if(receipt_image == None):
+            return
+        await message.channel.send(file=receipt_image)
         return
 
     if message.content.startswith(';;remindme'):
@@ -234,7 +242,10 @@ async def on_message(message):
         except:
             await message.add_reaction('❌')
             return
-        entry = [str(message.author.id),int(time),str(remind_message)]
+        id_request = find_id(message.content)
+        if(id_request == None):
+            id_request = message.author.id
+        entry = [str(id_request),int(time),str(remind_message)]
         with open(REMINDME_CSV,'a') as b:
             writer = csv.writer(b)
             writer.writerow(entry)
@@ -261,18 +272,37 @@ async def on_message(message):
 
 
 
+
 @client.event
 async def on_message_delete(message):
     if message.author.bot:
         print('bot message deleted')
         return
     global receipt_message
+    global receipt_image
     receipt_message = receipt_message_response % (message.author.id,message.content)
-    # print(receipt_message)
+    print(receipt_message)
+    for attachment in message.attachments:
+        if any(attachment.filename.lower().endswith(image) for image in image_types):
+            receipt_image = await attachment.to_file()
+            return
     return
 
-# @client.event
-# async def on_reaction_add(reaction, user):
-#     return
+@client.event 
+async def on_message_edit(before, after):
+    global receipt_message
+    receipt_message = receipt_message_response % (before.author.id,before.content)
+    print(receipt_message)
+    return
+
+
+@client.event
+async def on_voice_state_update(member, before, after):
+    if(member.id == 251275244528992256 and after.channel != None):
+        vc = await after.channel.connect()
+        vc.play(discord.FFmpegPCMAudio("Recording.mp3"))
+        await asyncio.sleep(10)
+        await vc.disconnect()
+    return
 
 client.run(TOKEN)
