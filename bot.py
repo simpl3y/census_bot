@@ -28,7 +28,7 @@ client = discord.Client(intents = intents)
 
 
 
-receipt_message = ''
+receipt_message = None
 receipt_image = None
 
 async def check_birthdays():
@@ -206,13 +206,17 @@ async def on_message(message):
 
     if message.content.startswith(';;receipt'):
         # print(receipt_message)
-        if(len(receipt_message) < 1):
+        global receipt_image
+        global receipt_message
+        if(receipt_message == None):
             await message.add_reaction('❌')
             return
         await message.channel.send(receipt_message)
-        if(receipt_image == None):
-            return
-        await message.channel.send(file=receipt_image)
+        if(receipt_image != None):
+            await message.channel.send(file=receipt_image)
+            await asyncio.sleep(5)
+        receipt_image = None
+        receipt_message = None
         return
 
     if message.content.startswith(';;remindme'):
