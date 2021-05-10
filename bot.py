@@ -20,9 +20,9 @@ load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 GUILD = os.getenv('DISCORD_GUILD')
 
-intents = discord.Intents.default()
-intents.members = True
-intents.voice_states = True
+intents = discord.Intents().all()
+# intents.members = True
+# intents.voice_states = True
 
 client = discord.Client(intents = intents)
 
@@ -307,6 +307,34 @@ async def on_voice_state_update(member, before, after):
         vc.play(discord.FFmpegPCMAudio("Recording.mp3"))
         await asyncio.sleep(10)
         await vc.disconnect()
+    return
+
+@client.event
+async def on_user_update(before,after):
+    if(before.avatar != after.avatar):
+        guild = discord.utils.find(lambda g: g.name == GUILD, client.guilds)
+        channel = discord.utils.get(guild.text_channels, name="general")  #TODO configurable default channel to post
+        if(not channel):
+            print("No general channel found")
+            return
+        await channel.send(PROFILE_UPDATE % after.id)
+    return
+
+@client.event
+async def on_member_update(before,after):
+    # print(after.activities)
+    for after_activity in after.activities:
+        if after_activity.name == 'Counter-Strike: Global Offensive':
+            for before_activity in before.activities:
+                if before_activity.name == 'Counter-Strike: Global Offensive':
+                    return
+        
+            guild = discord.utils.find(lambda g: g.name == GUILD, client.guilds)
+            channel = discord.utils.get(guild.text_channels, name="general")  #TODO configurable default channel to post
+            if(not channel):
+                print("No general channel found")
+                return
+            await channel.send("cs? <@249349397396062209> <@186009915582578688> <@157676060564127744> <@307580925506486273> <@227973840733470721>")    
     return
 
 client.run(TOKEN)

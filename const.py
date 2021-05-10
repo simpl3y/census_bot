@@ -56,3 +56,6 @@ image_types = ["png", "jpeg", "gif", "jpg"]
 REMINDME_CSV = 'remindme.csv'
 REMINDME_FORMAT = ['ID','TIME','MESSAGE']
 REMINDME_MESSAGE = '<@%s> I\'m reminding you to %s!'
+
+#user update
+PROFILE_UPDATE = 'Hey <@%d>! I really like your new profile picture!'
